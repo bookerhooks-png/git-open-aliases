@@ -1,0 +1,42 @@
+# 1. Create a new script file
+cat << 'EOF' > git-open.sh
+#!/usr/bin/env bash
+# git-open.sh - open the GitHub page for the current repo
+
+# Get the repo's remote URL
+url=$(git remote get-url origin 2>/dev/null)
+
+if [ -z "$url" ]; then
+  echo "❌ No remote 'origin' found. Run: git remote add origin <url>"
+  exit 1
+fi
+
+# Convert SSH URLs to HTTPS
+url=$(echo "$url" | sed -E 's#git@github.com:#https://github.com/#')
+
+# If it's already HTTPS, just use it
+url=$(echo "$url" | sed -E 's#^https://github.com/#https://github.com/#')
+
+# Open in default browser (works on macOS, Linux, Windows WSL)
+if command -v xdg-open &>/dev/null; then
+  xdg-open "$url"
+elif command -v open &>/dev/null; then
+  open "$url"
+elif command -v start &>/dev/null; then
+  start "$url"
+else
+  echo "🔗 $url"
+fi
+EOF
+
+# 2. Make it executable
+chmod +x git-open.sh
+
+# 3. Add it to Git
+git add git-open.sh
+
+# 4. Commit the new script
+git commit -m "Add git-open.sh script to open repo in browser"
+
+# 5. Push to GitHub
+git push
